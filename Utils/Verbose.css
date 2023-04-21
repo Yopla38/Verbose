@@ -1,0 +1,59 @@
+window {
+    background-color: #363d4a;
+    color: white;
+    font-family: system-ui;
+    font-size: 14px;
+}
+
+box {
+    background-color: #444e5e;
+    color: white;
+    font-family: system-ui;
+    font-size: 14px;
+}
+
+button {
+    background-color: #444e5e;
+    color: white;
+    font-family: system-ui;
+    font-size: 14px;
+}
+
+treeview {
+    background-color: #444e5e;
+    color: white;
+    font-family: system-ui;
+    font-size: 14px;
+}
+
+treeview:selected {
+    background-color: #171C24;
+    color: white;
+}
+
+treeview:hover {
+    background-color: #31415B;
+    color: white;
+}
+
+entry {
+    background-color: #444e5e;
+    color: white;
+    font-family: system-ui;
+    font-size: 14px;
+}
+
+textview {
+    background-color: #444e5e;
+    color: white;
+    font-family: system-ui;
+    font-size: 14px;
+}
+
+textview text{
+    background-color: #444e5e;
+    color: white;
+    caret-color: white;
+    font-family: system-ui;
+    font-size: 14px;
+}
