@@ -32,4 +32,4 @@ You must have openaiKey to use this program.
 Open openAI_key.txt file and paste your openAIkey string, save it
 
 Run:
-python comment_py_file.py
+python GUI_QT.py
