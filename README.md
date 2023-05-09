@@ -1,5 +1,7 @@
 # Verbose
 A GPT helper for jupyter notebook
+![image](https://github.com/Yopla38/Verbose/assets/70442829/cfc9d44d-cdf6-4daa-aa07-5e932e6a3f4c)
+
 
 Linux:
 Create an environnement conda:
