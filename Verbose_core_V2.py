@@ -13,7 +13,6 @@ from PyQt6.QtGui import QTextCursor
 from PyQt6.QtWidgets import QTextEdit
 from pyqt6_plugins.examplebutton import QtWidgets
 
-from Chat import Chat
 from Jupyter_page import JupyterNotebook
 
 
