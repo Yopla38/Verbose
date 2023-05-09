@@ -2,7 +2,7 @@
 A GPT helper for jupyter notebook.
 Just say what you want !
 
-![image](https://github.com/Yopla38/Verbose/assets/70442829/cfc9d44d-cdf6-4daa-aa07-5e932e6a3f4c)
+![image](https://github.com/Yopla38/Verbose/assets/70442829/cad5a198-763b-4d6f-bebf-07480e21afd2)
 
 
 Linux:
