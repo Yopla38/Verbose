@@ -9,7 +9,7 @@ Linux:
 Create an environnement conda:
 ```
 conda create --name verbose python=3.9
-sudo aptitude install libegl1:i386
+sudo apt install libegl1:i386
 ```
 
 Active environnement:
