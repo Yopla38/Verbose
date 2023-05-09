@@ -1,3 +1,6 @@
+# Copyright CEA Grenoble 2023
+# Auteur : Yoann CURE
+
 import time
 from typing import Optional, Dict
 
