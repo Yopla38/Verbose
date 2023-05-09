@@ -9,6 +9,7 @@ Linux:
 Create an environnement conda:
 ```
 conda create --name verbose python=3.9
+sudo aptitude install libegl1:i386
 ```
 
 Active environnement:
@@ -22,7 +23,6 @@ pip install openai
 pip install PyQt6
 pip install tiktoken
 pip install nbformat
-pip install webbrowser
 pip install jupyter_client
 pip install selenium
 pip install IPython
