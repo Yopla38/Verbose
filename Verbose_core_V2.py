@@ -1,3 +1,5 @@
+# Copyright CEA Grenoble 2023
+# Auteur : Yoann CURE
 import json
 import os
 import re
