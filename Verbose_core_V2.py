@@ -33,7 +33,7 @@ class verbose:
         self.temperature = 0.0
         self.printing = printing
         self.print = []
-        self.auto_programming = False
+        self.auto_programming = True
         self.set_role(role)
         if self.auto_programming:
             self.library_code = library
