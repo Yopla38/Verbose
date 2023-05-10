@@ -9,12 +9,20 @@ Example : "I have an image cross-05.tif and I would like to extract the intensit
 
 
 Linux:
+
+Install jupyter notebook
+```
+pip install notebook
+
+```
 Create an environnement conda and clone repository:
 ```
 conda create --name verbose python=3.9
 git clone https://github.com/Yopla38/Verbose.git
 cd Verbose
 ```
+I use chrome Version 111.0.5563.110. If not the same, download the good chromedriver version on https://chromedriver.chromium.org/downloads and push it on /Utils/chromedriver_linux64/ 
+
 
 Active environnement:
 ```
