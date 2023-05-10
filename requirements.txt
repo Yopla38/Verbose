@@ -10,5 +10,6 @@ xlwt~=1.3.0
 nbformat~=5.8.0
 selenium==3.141.0
 ipython~=8.11.0
-jupyter_client
+jupyter_client==8.1.0
+notebook==6.5.3
 tiktoken
