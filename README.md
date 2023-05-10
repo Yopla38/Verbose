@@ -19,8 +19,6 @@ conda activate verbose
 Install all dependency:
 ```
 pip install -r requirements.txt
-
-
 ```
 
 OpenAI:
