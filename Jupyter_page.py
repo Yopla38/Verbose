@@ -1,6 +1,8 @@
+# Copyright CEA Grenoble 2023
+# Autheur : Yoann CURE
 import time
-
 import nbformat as nbf
+import requests
 from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 import os
 import webbrowser
@@ -12,10 +14,30 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+import socket
 from IPython.display import Javascript, display
 import platform
 
+def is_executable(path):
+    """
+    Check if the file at the given path is executable.
+    Returns True if executable, False otherwise.
+    """
+    return os.access(path, os.X_OK)
+
+def is_port_free(port):
+    """
+    Vérifie si le port spécifié est libre.
+    Retourne True si le port est libre, False sinon.
+    """
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.bind(("localhost", port))
+        return True
+    except:
+        return False
+    finally:
+        sock.close()
 
 class JupyterNotebook:
     def __init__(self, filename="conversation.ipynb", port: int = 8888):
@@ -25,6 +47,9 @@ class JupyterNotebook:
         self.notebook_path = os.path.abspath(filename)
         self.browser = None
         self.chromedriver_path = self.get_chromedriver_path()
+        if not is_executable(self.chromedriver_path):
+            print("Veuillez rendre exécutable le fichier "+self.chromedriver_path+" exécutable")
+            exit()
         self.token = ''
         # crée une pile de dictionnaire printable dans l'interface.
         # "system_print"
@@ -54,13 +79,35 @@ class JupyterNotebook:
                 break
 
     def launch_jupyter_server_and_get_token(self, port: int = 8888):
-        #"--no-browser"
+        if not is_port_free(port):
+            process = subprocess.Popen(
+                ["jupyter", "notebook", "stop", f"{port}"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            print("Killing servers before strating...")
+            time.sleep(1)
+
+        notebook_dir = os.getcwd()
+        print("Starting jupyter servers...")
         process = subprocess.Popen(
-            ["jupyter", "notebook", f"--port={port}", "--no-browser"],
+            ["jupyter", "notebook", f"--port={port}", f"--notebook-dir={notebook_dir}", "--no-browser"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            text=True
         )
+        
+        ok = False
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            while ok != True:
+                try:
+                    s.connect(("localhost", port))
+                    ok = True
+                except ConnectionRefusedError:
+                    time.sleep(0.5)
+        print("Serveur started")
+
         self.process = process
 
     def wait_webbrowser(self, element):
@@ -132,7 +179,7 @@ class JupyterNotebook:
     def url(self):
         return f"http://localhost:{self.port_number}/notebooks/{self.notebook_name}"
     def open_notebook(self):
-        url = f"http://localhost:{self.port_number}/notebooks/{self.notebook_name}"
+        url = self.url()
         options = Options()
         options.add_argument("--no-sandbox")
         self.browser = webdriver.Chrome(self.chromedriver_path, options=options) # ou autre webdriver selon le navigateur
@@ -223,6 +270,7 @@ class JupyterNotebook:
         for url in urls:
             if url.find("localhost:8888") >= 0:
                 self.token = url.split("token=")[-1].split(" ::")[0]
+
                 self._print("Token copied in your clipboard. Just paste into your webbrowser.")
 
     def copy2clip(self, txt):
