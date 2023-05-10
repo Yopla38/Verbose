@@ -1,23 +1,18 @@
 # Copyright CEA Grenoble 2023
-# Auteur : Yoann CURE
+# Autheur : Yoann CURE
 import json
 import os
 import re
-import threading
 import time
 
 GUI = True
 GTK = False
 QT = True
 
-from PyQt6.QtCore import QRunnable, QThreadPool, QObject, QMutexLocker, QMutex, pyqtSlot
+from PyQt6.QtCore import QRunnable, QThreadPool, QMutexLocker, QMutex
 from PyQt6.QtGui import QTextCursor
-from PyQt6.QtWidgets import QTextEdit
 from pyqt6_plugins.examplebutton import QtWidgets
-
 from Jupyter_page import JupyterNotebook
-
-
 from Utils.LLM import llm
 
 
@@ -226,12 +221,10 @@ class verbose:
         if GUI:
 
             if QT:
-
                 self.task = StreamProgrammingTask(completions_word, gtk_area_text, done_event)
                 #self.task.setAutoDelete(True)
                 self.threadPool = QThreadPool()
                 self.threadPool.globalInstance().start(self.task)
-
                 #self.task.finished.connect(self.handle_stream_programming_result)  # connecter le signal
 
     def call_auto_programming(self, string):
@@ -250,72 +243,13 @@ class verbose:
             self.notebook.refresh_browser()
 
     def extraire_fonctions_et_code(self, text):
-        if self.model == "gpt-4-0314":
-            if text:
-                delim_dict = self.exemple_role[self.user_parameter_role]
-
-                pattern = r'?```(?:python)?\n(.*?)\n?```'
-                code_pattern = re.escape(delim_dict['s_code_str']) + "\n" + pattern
-                #print(code_pattern)
-                code_block = re.search(code_pattern, text, re.DOTALL)
-                #print(code_block)
-                if code_block:
-                    code_blocks = code_block.group(1)
-                else:
-                    code_blocks = ''
-
-                function_pattern = re.escape(delim_dict['s_fonction_str']) + "\n" + pattern
-                function_block = re.search(function_pattern, text, re.DOTALL)
-                if function_block:
-                    functions = function_block.group(1)
-                else:
-                    functions = ''
-
-                if function_block:
-                    comment_up = text[:function_block.start()]
-                    comment_down = text[code_block.end():] if code_block else text[function_block.end():]
-                elif code_block:
-                    comment_up = text[:code_block.start()]
-                    comment_down = text[code_block.end():]
-                else:
-                    comment_up, comment_down = text, ''
-
-                if functions == '' and code_block == '':
-                    comment_up, code_blocks, comment_down = self.unformated_code(text)
-                self._print("commentaire up : " + comment_up + '\n' + "commentaire down: " + '\n' + comment_down)
-                return functions, code_blocks, comment_up, comment_down
-        else:
-            if text:
-                delim_dict = self.exemple_role[self.user_parameter_role]
-
-                pattern = r'?```(?:python)?\n(.*?)\n?```'
-                code_pattern = re.escape(delim_dict['s_code_str']) + pattern
-                code_block = re.search(code_pattern, text, re.DOTALL)
-                if code_block:
-                    code_blocks = code_block.group(1)
-                else:
-                    code_blocks = ''
-
-                function_pattern = re.escape(delim_dict['s_fonction_str']) + pattern
-                function_block = re.search(function_pattern, text, re.DOTALL)
-                if function_block:
-                    functions = function_block.group(1)
-                else:
-                    functions = ''
-
-                if function_block:
-                    comment_up = text[:function_block.start()]
-                    comment_down = text[code_block.end():] if code_block else text[function_block.end():]
-                elif code_block:
-                    comment_up = text[:code_block.start()]
-                    comment_down = text[code_block.end():]
-                else:
-                    comment_up, comment_down = text, ''
-
-                if functions == '' and code_block == '':
-                    comment_up, code_blocks, comment_down = self.unformated_code(text)
-                self._print("commentaire up : " + comment_up + '\n' + "commentaire down: " + '\n' + comment_down)
-                return functions, code_blocks, comment_up, comment_down
+        if text:
+            delim_dict = self.exemple_role[self.user_parameter_role]
+            avant, apres = extract(text, delim_dict['s_code_str'])
+            comment_up, suite = extract(avant, delim_dict['s_fonction_str'])
+            functions, _ = extraire_contenu_python(suite)
+            code, comment_down = extraire_contenu_python(apres)
+            return functions, code, comment_up, comment_down
         return "", "", "No function or code, verify your connection", ""
 
     def unformated_code(self, text):
@@ -456,6 +390,52 @@ class user:
                 self.UI.chat_mode()
 
 
+
+def unformated_code(text):
+    code_block = ""
+    above_text = ""
+    below_text = ""
+
+    start_index = text.find("```python")
+    end_index = text.find("```", start_index + 1)
+
+    if start_index != -1 and end_index != -1:
+        code_block = text[start_index + 8:end_index]
+        above_text = text[:start_index].strip()
+        below_text = text[end_index + 3:].strip()
+
+    return "", code_block, above_text, below_text
+
+
+def extract(texte, separateur):
+    # Diviser le texte en deux parties
+    parties = texte.split(separateur, 1)
+
+    # Extraire les deux parties
+    partie_avant_code = parties[0].strip()
+    partie_code = parties[1].strip() if len(parties) > 1 else ""
+    return partie_avant_code, partie_code
+def extraire_contenu_python(texte: str):
+    # Utiliser une expression régulière pour chercher le contenu entre ```python et ```
+    pattern = re.compile(r'```(?:python)?(.*?)```', re.DOTALL)
+    resultat = pattern.search(texte)
+
+    # Si le contenu est trouvé, extraire le contenu et le reste, sinon retourner une chaîne de caractères vide pour le contenu et le texte original pour le reste
+    if resultat:
+        contenu_python = resultat.group(1).strip()
+        reste = pattern.sub("", texte).strip()
+        return contenu_python, reste
+    else:
+        return "", texte
+
+
 if __name__ == '__main__':
-    user = user(library="", role='auto-prog-scientifique')
-    user.start()
+    with open('1', 'r') as file:
+        text = file.read()
+
+
+    avant, apres = extract(text, "CODE:")
+    comment_up, suite = extract(avant, "FONCTIONS CREES:")
+    functions, _ = extraire_contenu_python(suite)
+    code, comment_down = extraire_contenu_python(apres)
+    print(comment_down)
