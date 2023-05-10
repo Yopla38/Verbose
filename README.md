@@ -6,9 +6,10 @@ Just say what you want !
 
 
 Linux:
-Create an environnement conda:
+Create an environnement conda and clone repository:
 ```
 conda create --name verbose python=3.9
+git clone 
 ```
 
 Active environnement:
