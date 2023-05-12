@@ -280,6 +280,7 @@ class ChatWindow(QMainWindow):
             # Récupère l'indice de l'élément sélectionné
             selected_index = selected_indexes[0]
             if selected_index.row() is not None:
+
                 del self.modified_prompt[selected_index.row()]
                 self.classe.UI.message_log = self.modified_prompt
                 self.gestion_liststore(action="store")
@@ -564,16 +565,16 @@ class ChatWindow(QMainWindow):
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             modified_dict = config_dict.copy()
-            modified_dict["prompt"] = prompt_edit.toPlainText()
-            modified_dict["engine"] = engine_combo.currentText()
-            modified_dict["temperature"] = str(temp_slider.value() / 100)
-            modified_dict["s_fonction_str"] = s_fonc_edit.toPlainText()
-            modified_dict["f_fonction_str"] = f_fonc_edit.toPlainText()
-            modified_dict["s_code_str"] = s_code_edit.toPlainText()
-            modified_dict["f_code_str"] = f_code_edit.toPlainText()
-            modified_dict["pre_prompt"] = pre_prompt_edit.toPlainText()
-            modified_dict["pre_restore_prompt"] = pre_restore_prompt_edit.toPlainText()
-            modified_dict["post_restore_prompt"] = post_restore_prompt_edit.toPlainText()
+            modified_dict[role]["prompt"] = prompt_edit.toPlainText()
+            modified_dict[role]["engine"] = engine_combo.currentText()
+            modified_dict[role]["temperature"] = str(temp_slider.value() / 100)
+            modified_dict[role]["s_fonction_str"] = s_fonc_edit.toPlainText()
+            modified_dict[role]["f_fonction_str"] = f_fonc_edit.toPlainText()
+            modified_dict[role]["s_code_str"] = s_code_edit.toPlainText()
+            modified_dict[role]["f_code_str"] = f_code_edit.toPlainText()
+            modified_dict[role]["pre_prompt"] = pre_prompt_edit.toPlainText()
+            modified_dict[role]["pre_restore_prompt"] = pre_restore_prompt_edit.toPlainText()
+            modified_dict[role]["post_restore_prompt"] = post_restore_prompt_edit.toPlainText()
             return modified_dict
         else:
             return config_dict
