@@ -1,31 +1,19 @@
 # Copyright CEA Grenoble 2023
-# Auteur : Yoann CURE
-
-import time
-from typing import Optional, Dict
-
-from Utils import highlighting
-from Utils.highlighting import PythonHighlighter
-
-
-from PyQt6 import QtCore, QtWidgets, uic
-from PyQt6.QtCore import Qt, QStringListModel, QThreadPool, pyqtSlot, QMutexLocker, QMutex, QRunnable, \
-    QRegularExpression
-from PyQt6.QtWidgets import QApplication, QMainWindow, QListView, QListWidgetItem, QDialog, QLabel, QLineEdit, \
-    QVBoxLayout, QDialogButtonBox, QMessageBox, QPlainTextEdit, QComboBox, QSlider, QWidget, QPushButton, QFileDialog
-from PyQt6.QtGui import QClipboard, QStandardItem, QStandardItemModel, QTextCursor, QSyntaxHighlighter, QTextCharFormat, \
-    QColor, QFont, QTextOption, QTextBlockUserData, QGuiApplication, QBrush
-
-from PyQt6 import uic
+# Autheur : Yoann CURE
 import ast
 import json
 import os
-import pickle
-import threading
+from typing import Optional, Dict
+from Utils.highlighting import PythonHighlighter
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import Qt, QStringListModel
+from PyQt6.QtWidgets import QApplication, QMainWindow, QDialog, QLabel, QVBoxLayout, QDialogButtonBox, QMessageBox, \
+    QPlainTextEdit, QComboBox, QSlider, QFileDialog
+from PyQt6.QtGui import QTextCursor, QFont, QGuiApplication
+from PyQt6 import uic
 from Utils.LLM import llm as llmtemp
-from pyqt6_plugins.examplebuttonplugin import QtGui
+from Verbose_core_V2 import verbose
 
-from Verbose_core_V2 import verbose, StreamProgrammingTask
 
 def dialog_box(message):
     # Créer une boîte de dialogue
@@ -170,6 +158,7 @@ class ChatWindow(QMainWindow):
         self.list = []
         self.gestion_liststore('init')
         self.populate_role()
+
         self.role.currentIndexChanged.connect(self.change_role)
         self.print_action()
 
@@ -190,21 +179,28 @@ class ChatWindow(QMainWindow):
         self.highlighter = PythonHighlighter(self.chat_area.document())
         self.edit_role.clicked.connect(self.edit_role_dialog)
 
+        # quelques réglages
+        self.message_entry.setPlaceholderText("Write your request here. Example: Open the image 5.tif and search and trace the contours found.")
+
     def populate_role(self):
         for key in self.classe.UI.exemple_role:
             self.role.addItem(str(key))
+        # go to actual role
+        index = self.role.findText(self.classe.role)
+        self.role.setCurrentIndex(index)
 
     def change_role(self):
         key = self.role.currentText()
         self.classe.role = key
         self.classe.UI.role = self.classe.role
         self.classe.UI.set_role(self.classe.role)
+        self.gestion_liststore(action="store")
 
     def send_message(self):
         message = self.message_entry.toPlainText()
 
         if message:
-            self.chat_area.insertPlainText("You: " + message + "\n")
+            self.chat_area.insertPlainText("You: " + message + "\n\n")
             self.message_entry.setPlainText("")
             self.classe.UI.completions = ""
             stream = True
@@ -241,13 +237,14 @@ class ChatWindow(QMainWindow):
         filename = self.classe.load()
         if filename:
             self.gestion_liststore("store")
-            synchronize = dialog_box("Voulez-vous analyser la page jupyter avec Verbose ?")
+            synchronize = dialog_box("Do you want to analyze the Jupyter page with Verbose? (GPT-4)")
             if synchronize:
                 self.restore_tree()
 
     def new_button(self):
         filename = self.classe.new()
-        self.reset_tree()
+        if filename:
+            self.reset_tree()
 
     def reset_tree(self):
         self.chat_area.clear()
@@ -592,14 +589,14 @@ class ChatWindow(QMainWindow):
 
 
         if code_block is not None:
-            self.chat_area.insertPlainText("Résumé de session : \n")
+            self.chat_area.insertPlainText("Session summary : \n")
             QApplication.processEvents()
             for code in code_block:
                 message_log = [{"role": "system", "content": ex_role[role]['prompt']}]
                 message_log.append({"role": "user", "content": code})
                 completions = ""
                 response = llm_temp.chat(message_log, ex_role, "resume_session")
-                self.chat_area.insertPlainText("Nouvelle fonction trouvée : ")
+                self.chat_area.insertPlainText("New function found : ")
                 for completion in response:
                     word = self.classe.UI.streaming_decompose_text(completion)
                     cursor = self.chat_area.textCursor()
@@ -782,8 +779,8 @@ class user:
 
     def load(self):
         # Ouvrez une boîte de dialogue de sélection de fichier pour les fichiers .ipynb
-        filename, _ = QFileDialog.getOpenFileName(None, 'Ouvrir un fichier notebook Jupyter', '.',
-                                                  'Fichiers notebook (*.ipynb)')
+        filename, _ = QFileDialog.getOpenFileName(None, 'Open a Jupyter notebook file', '.',
+                                                  'Notebook file (*.ipynb)')
         if filename:
             self.notebook = filename
             self.UI.notebook_file = filename
