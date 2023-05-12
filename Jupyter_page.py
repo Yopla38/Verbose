@@ -2,7 +2,7 @@
 # Autheur : Yoann CURE
 import time
 import nbformat as nbf
-import requests
+
 from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 import os
 import webbrowser
@@ -48,7 +48,7 @@ class JupyterNotebook:
         self.browser = None
         self.chromedriver_path = self.get_chromedriver_path()
         if not is_executable(self.chromedriver_path):
-            print("Veuillez rendre exécutable le fichier "+self.chromedriver_path+" exécutable")
+            print("Please make the file executable :"+self.chromedriver_path)
             exit()
         self.token = ''
         # crée une pile de dictionnaire printable dans l'interface.
@@ -87,7 +87,6 @@ class JupyterNotebook:
                 text=True
             )
             print("Killing servers before strating...")
-            time.sleep(1)
 
         notebook_dir = os.getcwd()
         print("Starting jupyter servers...")
@@ -97,7 +96,7 @@ class JupyterNotebook:
             stderr=subprocess.PIPE,
             text=True
         )
-        
+
         ok = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             while ok != True:
@@ -173,7 +172,7 @@ class JupyterNotebook:
             self._print("Invalid cell index")
 
     def save_notebook(self):
-        with open(self.notebook_name, "w") as f:
+        with open(self.notebook_name, "w", encoding='utf-8') as f:
             nbf.write(self.nb, f)
 
     def url(self):
@@ -198,7 +197,7 @@ class JupyterNotebook:
         self.load_notebook()
 
     def load_notebook(self):
-        with open(self.notebook_path, "r") as f:
+        with open(self.notebook_path, "r", encoding='utf-8') as f:
             self.nb = nbf.read(f, as_version=nbf.NO_CONVERT)
             #print("Loading : " + self.notebook_path)
 
@@ -326,26 +325,8 @@ class JupyterKernel:
 
 if __name__ == '__main__':
 
-    '''
-    notebook = JupyterNotebook()
-    notebook.add_code_cell("print('Hello, World!')")
-    notebook.add_markdown_cell("This is a markdown cell")
-    notebook.save_notebook()
-    notebook.open_notebook()
-    '''
     notebook = JupyterNotebook("conversation.ipynb")
     notebook.load_notebook()
     notebook.open_notebook()
     input()
     notebook.refresh_browser()
-    #notebook.add_code_cell("print('Hello, world!')")
-    #notebook.add_markdown_cell("# This is a markdown cell")
-    #notebook.save_notebook()
-    #notebook.open_notebook()
-
-    #kernel = JupyterKernel("conversation.ipynb")
-    #kernel.restart_kernel()
-
-    # Assurez-vous de fermer le kernel à la fin de son utilisation
-    #time.sleep(5)
-    #kernel.shutdown_kernel()
