@@ -222,9 +222,9 @@ class llm:
             tokens_per_message = 3
             tokens_per_name = 1
         else:
-            raise NotImplementedError(
-                f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai
-                /openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+            print("Using GPT-3.5 for tokenize GPT-2")
+            return self.openai_tokinizer(messages, model="gpt-3.5-turbo-0301")
+        
         num_tokens = 0
         for message in messages:
             num_tokens += tokens_per_message
