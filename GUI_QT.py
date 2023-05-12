@@ -210,24 +210,45 @@ class ChatWindow(QMainWindow):
                 response = self.classe.send_message(text=message, history_prompt=self.modified_prompt,
                                                     gtk_area_text=self.chat_area, done_event=self.done_event)
 
-                self.state_buttons(False)
-                for completion in response:
-                    word = self.classe.UI.streaming_decompose_text(completion)
-                    cursor = self.chat_area.textCursor()
-                    cursor.movePosition(QTextCursor.MoveOperation.End)
-                    self.chat_area.setTextCursor(cursor)
-                    self.chat_area.insertPlainText(word)
-                    self.classe.UI.completions += word
-                    QApplication.processEvents()
+                if response:
+                    completions = self.classe.UI.completions
+                    self.state_buttons(False)
+                    for completion in response:
+                        word = self.classe.UI.streaming_decompose_text(completion)
+                        cursor = self.chat_area.textCursor()
+                        cursor.movePosition(QTextCursor.MoveOperation.End)
+                        self.chat_area.setTextCursor(cursor)
+                        self.chat_area.insertPlainText(word)
+                        self.classe.UI.completions += word
+                        QApplication.processEvents()
+                        if self.stop_requested:
+                            self.classe.UI.completions = completions
+                            self.state_buttons(True)
+                            return
+                else:
+                    self.chat_area.insertPlainText("Maximum tokens !!! Please summarize your notebook !\n\n")
+                    self.state_buttons(True)
+                    return
 
                 self.classe.post_traitment()
-
             self.print_action()
             self.gestion_liststore('store')
             self.state_buttons(True)
 
+    def stop(self):
+        self.stop_requested = True
+
     def state_buttons(self, state: bool = True):
-        self.send_button.setEnabled(state)
+        if not state:
+            self.send_button.setText("Stop")
+            self.send_button.clicked.connect(self.stop)
+            self.stop_requested = False
+        else:
+            self.send_button.setText("Send")
+            self.send_button.clicked.connect(self.send_message)
+            self.stop_requested = False
+
+        #self.send_button.setEnabled(state)
         self.modify_button.setEnabled(state)
         self.delete_button.setEnabled(state)
         self.reset.setEnabled(state)
