@@ -23,13 +23,10 @@ Active environnement:
 ```
 conda activate verbose
 ```
-Install jupyter notebook
+Install jupyter notebook OR jupyter-lab
 ```
 pip install notebook
-
-```
-OR jupyter lab
-```
+OR
 pip install jupyterlab
 ```
 Install all dependency:
