@@ -41,22 +41,30 @@ def is_port_free(port):
 
 class JupyterNotebook:
     def __init__(self, filename="conversation.ipynb", port: int = 8888):
-
-        self.process = None
-        self.notebook_name = os.path.basename(filename)
-        self.notebook_path = os.path.abspath(filename)
-        self.browser = None
-        self.chromedriver_path = self.get_chromedriver_path()
-        if not is_executable(self.chromedriver_path):
-            print("Please make the file executable :"+self.chromedriver_path)
-            exit()
-        self.token = ''
         # crée une pile de dictionnaire printable dans l'interface.
         # "system_print"
         # "system_input"
         # "IA_print"
         # "IA_input"
         self.print = []
+
+        self.jupyternotebook_version = None
+        self.jupyterlab_version = None
+        self.jupyterlab = None
+        # vérifier les versions de jupyter
+        self.what_jupyter_installed()
+
+        self.process = None
+        self.notebook_name = os.path.basename(filename)
+        self.notebook_path = os.path.abspath(filename)
+        self.browser = None
+        self.chromedriver_path = self.get_chromedriver_path()
+
+        if not is_executable(self.chromedriver_path):
+            print("Please make the file executable :"+self.chromedriver_path)
+            exit()
+        self.token = ''
+
         if os.path.exists(self.notebook_path):
             self.load_notebook()
         else:
@@ -79,9 +87,10 @@ class JupyterNotebook:
                 break
 
     def launch_jupyter_server_and_get_token(self, port: int = 8888):
+        com = "lab" if not self.jupyterlab else "notebook"
         if not is_port_free(port):
             process = subprocess.Popen(
-                ["jupyter", "notebook", "stop", f"{port}"],
+                ["jupyter", com, "stop", f"{port}"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True
@@ -91,7 +100,7 @@ class JupyterNotebook:
         notebook_dir = os.getcwd()
         print("Starting jupyter servers...")
         process = subprocess.Popen(
-            ["jupyter", "notebook", f"--port={port}", f"--notebook-dir={notebook_dir}", "--no-browser"],
+            ["jupyter", com, f"--port={port}", f"--notebook-dir={notebook_dir}", "--no-browser"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
@@ -252,8 +261,9 @@ class JupyterNotebook:
 
 
     def launch_jupyter_notebook_list(self):
+        com = "lab" if not self.jupyterlab else "notebook"
         process = subprocess.Popen(
-            ["jupyter", "notebook", "list"],
+            ["jupyter", com, "list"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -304,6 +314,31 @@ class JupyterNotebook:
     def position_screen(self, x, y, width, height):
         self.browser.set_window_position(x, y)
         self.browser.set_window_size(width, height)
+
+    def what_jupyter_installed(self):
+        import importlib.metadata
+
+        try:
+            self.jupyterlab_version = importlib.metadata.version("jupyterlab").split(".")[0]
+            self._print("Jupyter-lab "+self.jupyterlab_version+" found !")
+            self.jupyterlab = True
+            return True, False
+
+        except importlib.metadata.PackageNotFoundError:
+            self._print("JupyterLab not found.")
+            print("JupyterLab not found.")
+            try:
+                self.jupyternotebook_version = importlib.metadata.version("notebook").split(".")[0]
+                self._print("Jupyter notebook "+self.jupyternotebook_version+" found !")
+                self.jupyterlab = False
+                return False, True
+
+            except importlib.metadata.PackageNotFoundError:
+                # JupyterLab n'est pas installé, effectuez les actions appropriées
+                self._print("Jupyter notebook not found.")
+                print("Jupyter notebook not found.")
+                exit()
+
 
 class JupyterKernel:
     def __init__(self, notebook_file):
