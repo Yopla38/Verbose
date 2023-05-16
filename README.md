@@ -10,11 +10,6 @@ Example : "I have an image cross-05.tif and I would like to extract the intensit
 
 Linux:
 
-Install jupyter notebook
-```
-pip install notebook
-
-```
 Create an environnement conda and clone repository:
 ```
 conda create --name verbose python=3.9
@@ -28,7 +23,15 @@ Active environnement:
 ```
 conda activate verbose
 ```
+Install jupyter notebook
+```
+pip install notebook
 
+```
+OR jupyter lab
+```
+pip install jupyterlab
+```
 Install all dependency:
 ```
 pip install -r requirements.txt
